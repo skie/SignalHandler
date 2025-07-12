@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  testsuite:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4']
+        os: [ubuntu-latest, windows-latest]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, intl
+        coverage: pcov
+
+    - name: Cache composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}
+
+    - name: composer install
+      run: composer install --prefer-dist --no-progress
+
+    - name: Setup problem matchers for PHPUnit
+      if: matrix.php-version == '8.2' && matrix.os == 'ubuntu-latest'
+      run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+    - name: Run PHPUnit with coverage
+      if: matrix.php-version == '8.2' && matrix.os == 'ubuntu-latest'
+      run: |
+        export CODECOVERAGE=1
+        vendor/bin/phpunit --display-deprecations --display-incomplete --display-skipped --coverage-clover=coverage.xml
+
+    - name: Run PHPUnit without coverage
+      if: matrix.php-version != '8.2' || matrix.os != 'ubuntu-latest'
+      run: vendor/bin/phpunit
+
+    - name: Submit code coverage
+      if: matrix.php-version == '8.2' && matrix.os == 'ubuntu-latest'
+      uses: codecov/codecov-action@v3
+
+  cs-stan:
+    name: Coding Standard & Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, intl
+        coverage: none
+
+    - name: Cache composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}
+
+    - name: composer install
+      run: composer install --prefer-dist --no-progress
+
+    - name: Setup PHPStan
+      run: composer stan-setup
+
+    - name: Run PHP CodeSniffer
+      run: composer cs-check
+
+    - name: Run phpstan
+      run: composer stan
