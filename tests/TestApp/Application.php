@@ -41,7 +41,6 @@ class Application extends BaseApplication implements PluginApplicationInterface
         if (Configure::read('debug')) {
             $this->addPlugin('DebugKit', ['bootstrap' => true]);
         }
-
     }
 
     /**
