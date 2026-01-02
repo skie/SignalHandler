@@ -14,7 +14,7 @@ use SignalHandler\Service\SignalService;
 /**
  * Plugin for SignalHandler
  */
-class Plugin extends BasePlugin
+class SignalHandlerPlugin extends BasePlugin
 {
     /**
      * Load all the plugin configuration and bootstrap logic.
