@@ -12,5 +12,3 @@ parameters:
         - tests/TestApp/config/app.php
         - tests/TestApp/Application.php
     ignoreErrors:
-        - '#Method SignalHandler\\Plugin::bootstrap\(\) has parameter \$app with generic interface Cake\\Core\\PluginApplicationInterface but does not specify its types: TSubject#'
-services:
