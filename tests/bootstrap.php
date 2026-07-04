@@ -40,7 +40,6 @@ require ROOT . '/vendor/autoload.php';
 
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
-use Cake\Error\ErrorTrap;
 
 Configure::write('App', ['namespace' => 'TestApp']);
 Configure::write('debug', true);
@@ -85,11 +84,13 @@ Configure::write('Session', [
 
 Configure::write('App.encoding', 'utf8');
 
-$error = [
-    'errorLevel' => E_ALL,
-    'skipLog' => [],
-    'log' => true,
-    'trace' => true,
-    'ignoredDeprecationPaths' => [],
-];
-(new ErrorTrap($error))->register();
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
+$errorHandler = function ($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) {
+        return;
+    }
+    throw new ErrorException($message, 0, $severity, $file, $line);
+};
+set_error_handler($errorHandler);
