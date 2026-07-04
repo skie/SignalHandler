@@ -163,7 +163,7 @@ final class SignalRegistry
     {
         if ($this->platformDetector->isLinux() && function_exists('pcntl_signal_get_handler')) {
             $handler = pcntl_signal_get_handler($signal);
-            /** @var callable|int|null $handler */
+            /** @phpstan-ignore-next-line */
             if (is_callable($handler) || is_int($handler)) {
                 return $handler;
             }
